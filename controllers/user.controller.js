@@ -196,5 +196,5 @@ exports.logout = async (req, res) => {
   }
 
   // Return Logged out successfully
-  return res.status(200).send({ message: "Logged Out Successfully" });
+  return res.status(200).send({ message: "Logged Out Successfully!!" });
 };
