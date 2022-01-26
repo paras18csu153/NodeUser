@@ -1,7 +1,11 @@
 const User = require("../models/user.model");
+const Token = require("../models/token.model");
 
 const checkPassword = require("../helpers/passwordValidator");
 const validateEmail = require("../helpers/emailValidator");
+
+const tokenGenerator = require("../helpers/tokenGenerator");
+const tokenValidator = require("../helpers/tokenValidator");
 
 const PasswordHash = require("password-hash");
 
@@ -67,9 +71,33 @@ exports.register = async (req, res) => {
   }
 
   // Create user
+  user = new User(user);
   user = await User.create(user);
 
-  // Return User if registered
+  if (!user) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
+  // Generate Token
+  var generatedToken = tokenGenerator(user.username);
+
+  var token = new Token({
+    token: generatedToken,
+    user_id: user._id,
+  });
+
+  token = await Token.create(token);
+
+  if (!token) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
+  // Set header and Return User if registered
+  res.setHeader("Authorization", token.token);
   return res.status(200).send(user);
 };
 
@@ -104,6 +132,34 @@ exports.login = async (req, res) => {
     });
   }
 
-  // Return User if verified
+  var token = await Token.getByUserId(existingUser._id);
+
+  if (!token) {
+    var generatedToken = tokenGenerator(user.username);
+
+    var token = new Token({
+      token: generatedToken,
+      user_id: user._id,
+    });
+
+    token = await Token.create(token);
+  } else {
+    validatedToken = tokenValidator(token.token);
+    if (validatedToken) {
+      if (validatedToken != existingUser.username) {
+        return res.status(401).send({
+          message: "Token Expired!!",
+        });
+      }
+    } else {
+      var generatedToken = tokenGenerator(user.username);
+      token.token = generatedToken;
+
+      token = await Token.updateToken(token);
+    }
+  }
+
+  // Return User with token if verified
+  res.setHeader("Authorization", token.token);
   return res.status(200).send(existingUser);
 };
