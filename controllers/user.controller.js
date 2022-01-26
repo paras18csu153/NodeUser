@@ -3,6 +3,8 @@ const User = require("../models/user.model");
 const checkPassword = require("../helpers/passwordValidator");
 const validateEmail = require("../helpers/emailValidator");
 
+const PasswordHash = require("password-hash");
+
 exports.register = async (req, res) => {
   // Convert request data to user
   var user = req.body;
@@ -44,6 +46,9 @@ exports.register = async (req, res) => {
         "Password should contain one capital letter, one small letter, one special character and one number!!",
     });
   }
+
+  // Hash Password
+  user.password = PasswordHash.generate(user.password);
 
   // Verify email pattern
   if (!validateEmail(user.email)) {
