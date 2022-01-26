@@ -57,7 +57,7 @@ exports.register = async (req, res) => {
     });
   }
 
-  // Check if user already exists with same username
+  // Check if user already exists with same username or email
   var existingUser = await User.getByUsernameEmail(user.username, user.email);
 
   if (existingUser) {
@@ -71,4 +71,39 @@ exports.register = async (req, res) => {
 
   // Return User if registered
   return res.status(200).send(user);
+};
+
+exports.login = async (req, res) => {
+  // Convert request data to user
+  var user = req.body;
+
+  // Data Validation
+  if (!user.username && !user.email) {
+    return res
+      .status(400)
+      .send({ message: "Username or Email shall be provided!!" });
+  }
+
+  if (!user.password) {
+    return res.status(400).send({ message: "Password cannot be empty!!" });
+  }
+
+  // Check if user doesn't exist with same username or email
+  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+
+  if (!existingUser) {
+    return res.status(404).send({
+      message: "User doesn't exist!!",
+    });
+  }
+
+  // Verify User
+  if (!PasswordHash.verify(user.password, existingUser.password)) {
+    return res.status(401).send({
+      message: "Credentials doesn't match!!",
+    });
+  }
+
+  // Return User if verified
+  return res.status(200).send(existingUser);
 };

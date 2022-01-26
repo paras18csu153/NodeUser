@@ -18,7 +18,7 @@ module.exports.create = async (user) => {
   return user;
 };
 
-// Check if user already exists with same username
+// Check if user already exists with same username or email
 module.exports.getByUsernameEmail = async (username, email) => {
   var existingUser = await User.findOne({
     $or: [
