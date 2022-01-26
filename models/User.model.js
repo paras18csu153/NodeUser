@@ -10,6 +10,7 @@ let userSchema = new Schema({
 
 var User = (module.exports = mongoose.model("User", userSchema));
 
+// Create user
 module.exports.create = async (user) => {
   user = new User(user);
   user = await user.save();
@@ -17,6 +18,7 @@ module.exports.create = async (user) => {
   return user;
 };
 
+// Check if user already exists with same username
 module.exports.getByUsernameEmail = async (username, email) => {
   var existingUser = await User.findOne({
     $or: [
