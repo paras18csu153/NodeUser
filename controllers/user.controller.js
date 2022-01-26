@@ -155,7 +155,7 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   // Token Deletion if verified
-  token = await Token.deleteById(existingToken._id);
+  token = await Token.deleteByToken(req.token);
 
   if (!token) {
     return res.status(500).send({ message: "Internal Server Error!!" });

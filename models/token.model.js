@@ -58,10 +58,12 @@ module.exports.updateToken = async (token) => {
   }
 };
 
-// Delete token by Token Id
-module.exports.deleteById = async (id) => {
+// Delete token by Token
+module.exports.deleteByToken = async (tokenName) => {
   try {
-    token = await Token.findByIdAndDelete(id);
+    token = await Token.findOneAndDelete({
+      token: tokenName,
+    });
     return token;
   } catch (err) {
     return null;
