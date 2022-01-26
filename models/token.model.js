@@ -30,7 +30,19 @@ module.exports.getByUserId = async (user_id) => {
   }
 };
 
-// Get token by User Id
+// Get token by Token
+module.exports.getByToken = async (tokenName) => {
+  try {
+    token = await Token.findOne({
+      token: tokenName,
+    });
+    return token;
+  } catch (err) {
+    return null;
+  }
+};
+
+// Update Token
 module.exports.updateToken = async (token) => {
   try {
     token = await Token.findByIdAndUpdate(
@@ -40,6 +52,16 @@ module.exports.updateToken = async (token) => {
       },
       { new: true }
     );
+    return token;
+  } catch (err) {
+    return null;
+  }
+};
+
+// Delete token by Token Id
+module.exports.deleteById = async (id) => {
+  try {
+    token = await Token.findByIdAndDelete(id);
     return token;
   } catch (err) {
     return null;

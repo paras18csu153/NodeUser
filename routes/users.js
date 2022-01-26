@@ -9,4 +9,7 @@ router.post("/register", userController.register);
 /* Login user. */
 router.post("/", userController.login);
 
+/* Logout user. */
+router.post("/logout", userController.logout);
+
 module.exports = router;
