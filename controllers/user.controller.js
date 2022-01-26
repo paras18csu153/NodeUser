@@ -5,7 +5,6 @@ const checkPassword = require("../helpers/passwordValidator");
 const validateEmail = require("../helpers/emailValidator");
 
 const tokenGenerator = require("../helpers/tokenGenerator");
-const tokenValidator = require("../helpers/tokenValidator");
 
 const PasswordHash = require("password-hash");
 
@@ -144,19 +143,10 @@ exports.login = async (req, res) => {
 
     token = await Token.create(token);
   } else {
-    validatedToken = tokenValidator(token.token);
-    if (validatedToken) {
-      if (validatedToken != existingUser.username) {
-        return res.status(401).send({
-          message: "Token Expired!!",
-        });
-      }
-    } else {
-      var generatedToken = tokenGenerator(user.username);
-      token.token = generatedToken;
+    var generatedToken = tokenGenerator(user.username);
+    token.token = generatedToken;
 
-      token = await Token.updateToken(token);
-    }
+    token = await Token.updateToken(token);
   }
 
   // Return User with token if verified
