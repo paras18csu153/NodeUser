@@ -58,16 +58,7 @@ exports.register = async (req, res) => {
   }
 
   // Check if user already exists with same username
-  var existingUser = await User.findOne({
-    $or: [
-      {
-        username: user.username,
-      },
-      {
-        email: user.email,
-      },
-    ],
-  });
+  var existingUser = await User.getByUsernameEmail(user.username, user.email);
 
   if (existingUser) {
     return res.status(409).send({
@@ -76,8 +67,7 @@ exports.register = async (req, res) => {
   }
 
   // Create user
-  user = new User(user);
-  user = await user.save();
+  user = await User.create(user);
 
   // Return User if registered
   return res.status(200).send(user);

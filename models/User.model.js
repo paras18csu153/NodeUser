@@ -8,4 +8,25 @@ let userSchema = new Schema({
   password: { type: String, reqiured: true },
 });
 
-module.exports = mongoose.model("User", userSchema);
+var User = (module.exports = mongoose.model("User", userSchema));
+
+module.exports.create = async (user) => {
+  user = new User(user);
+  user = await user.save();
+
+  return user;
+};
+
+module.exports.getByUsernameEmail = async (username, email) => {
+  var existingUser = await User.findOne({
+    $or: [
+      {
+        username: username,
+      },
+      {
+        email: email,
+      },
+    ],
+  });
+  return existingUser;
+};
