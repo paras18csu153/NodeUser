@@ -1,11 +1,12 @@
 const nodemailer = require("nodemailer");
+const { v4: uuidv4 } = require("uuid");
 
-const Verification = require("../models/verification.model");
+const ForgetPassword = require("../models/forgetPassword.model");
 
 const hashString = require("./hashString");
 
 // async..await is not allowed in global scope, must use a wrapper
-async function sendMailForVerification(mail) {
+async function sendMailForPassword(mail) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
@@ -21,16 +22,17 @@ async function sendMailForVerification(mail) {
     },
   });
 
-  var hash = hashString(mail);
-  var verificationLink = process.env.VERIFY_URL + hash;
+  var uuid = uuidv4();
+  var hash = hashString(uuid);
+  var verificationLink = process.env.FORGET_PASSWORD_URL + hash;
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
     from: '"Fred Foo 👻"', // sender address
     to: mail, // list of receivers
-    subject: "Verification Mail", // Subject line
+    subject: "Change Password Mail", // Subject line
     html:
-      "<h3>Hi </h3><p>Your Verification link is:</p><a href='" +
+      "<h3>Hi </h3><p>Your link to Reset Password is:</p><a href='" +
       verificationLink +
       "'>" +
       verificationLink +
@@ -41,11 +43,12 @@ async function sendMailForVerification(mail) {
   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 
-  var verification = new Verification({
+  var fp = new ForgetPassword({
     verificationLink: hash,
+    email: mail,
   });
 
-  verification = await Verification.create(verification);
+  fp = await ForgetPassword.create(fp);
 }
 
-module.exports = sendMailForVerification;
+module.exports = sendMailForPassword;
