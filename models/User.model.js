@@ -6,6 +6,7 @@ let userSchema = new Schema({
   username: { type: String, reqiured: true },
   email: { type: String, reqiured: true },
   password: { type: String, reqiured: true },
+  verified: { type: Boolean, default: false },
 });
 
 var User = (module.exports = mongoose.model("User", userSchema));
@@ -33,6 +34,19 @@ module.exports.getByUsernameEmail = async (username, email) => {
         },
       ],
     });
+    return existingUser;
+  } catch (err) {
+    return null;
+  }
+};
+
+// Check if user already exists with same username or email
+module.exports.updateVerification = async (email) => {
+  try {
+    var existingUser = await User.findOneAndUpdate(
+      { email: email },
+      { $set: { verified: true } }
+    );
     return existingUser;
   } catch (err) {
     return null;

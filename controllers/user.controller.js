@@ -1,10 +1,12 @@
-const User = require("../models/user.model");
 const Token = require("../models/token.model");
+const User = require("../models/user.model");
+const Verification = require("../models/verification.model");
 
 const checkPassword = require("../helpers/passwordValidator");
-const validateEmail = require("../helpers/emailValidator");
-
+const hashString = require("../helpers/hashString");
+const sendMail = require("../helpers/sendMail");
 const tokenGenerator = require("../helpers/tokenGenerator");
+const validateEmail = require("../helpers/emailValidator");
 
 const PasswordHash = require("password-hash");
 
@@ -96,6 +98,9 @@ exports.register = async (req, res) => {
     });
   }
 
+  // Send Verification Mail
+  sendMail(user.email);
+
   // Set header and Return User if registered
   res.setHeader("Authorization", token.token);
   return res.status(200).send(user);
@@ -148,9 +153,79 @@ exports.login = async (req, res) => {
     token = await Token.updateToken(token);
   }
 
+  if (!user.verified) {
+    // Send Verification Mail
+    sendMail(existingUser.email);
+  }
+
   // Return User with token if verified
   res.setHeader("Authorization", token.token);
   return res.status(200).send(existingUser);
+};
+
+exports.sendMail = async (req, res) => {
+  var user = req.body;
+
+  // Data Validation
+  if (!user.email) {
+    return res.status(400).send({ message: "Email cannot be empty!!" });
+  }
+
+  // Check if user doesn't exist with same username or email
+  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+
+  if (!existingUser) {
+    return res.status(404).send({
+      message: "User doesn't exist!!",
+    });
+  }
+
+  if (!existingUser.verified) {
+    sendMail(user.email);
+    return res.status(200).send({
+      message: "Verification Mail Sent!!",
+    });
+  }
+
+  return res.status(200).send({
+    message: "User already Verified!!",
+  });
+};
+
+exports.verifyMail = async (req, res) => {
+  var user = req.body;
+  var verificationLink = req.params["verificationLink"];
+
+  // Data Validation
+  if (!user.email) {
+    return res.status(400).send({ message: "Email cannot be empty!!" });
+  }
+
+  if (!verificationLink) {
+    return res.status(400).send({ message: "Invalid Verifcation Link!!" });
+  }
+
+  if (verificationLink != hashString(user.email)) {
+    return res.status(412).send({ message: "Invalid Verifcation Link!!" });
+  }
+
+  var verification = await Verification.getForUser(verificationLink);
+
+  if (!verification) {
+    return res.status(404).send({ message: "Invalid Verifcation Link!!" });
+  }
+
+  var user = await User.updateVerification(user.email);
+
+  var verification = await Verification.deleteForUser(verificationLink);
+
+  if (!user || !verification) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
+  return res.status(200).send(user);
 };
 
 exports.logout = async (req, res) => {
