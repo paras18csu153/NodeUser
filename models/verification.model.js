@@ -46,3 +46,16 @@ module.exports.deleteForUser = async (verificationLink) => {
     return null;
   }
 };
+
+// Delete Invalid Verification Links
+module.exports.deleteAllByTime = async (timestamp) => {
+  try {
+    timestamp = timestamp - 86400000;
+    var verification = await Verification.deleteMany({
+      createdAt: { $lt: timestamp },
+    });
+    return verification;
+  } catch (err) {
+    return null;
+  }
+};

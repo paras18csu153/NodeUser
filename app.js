@@ -9,6 +9,9 @@ require("dotenv").config();
 const db = require("./config/db");
 db();
 
+const scheduler = require("./schedule/scheduler");
+scheduler();
+
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 
