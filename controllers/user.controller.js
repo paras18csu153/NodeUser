@@ -363,6 +363,10 @@ exports.resetPassword = async (req, res) => {
     return res.status(412).send({ message: "Invalid Verifcation Link!!" });
   }
 
+  if (fp.email != user.email) {
+    return res.status(412).send({ message: "Invalid Verifcation Link!!" });
+  }
+
   // Hash Password
   user.password = PasswordHash.generate(user.password);
 
