@@ -1,9 +1,25 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+var userController = require("../controllers/user.controller");
+var auth = require("../middlewares/auth.middleware");
+
+/* Register user. */
+router.post("/register", userController.register);
+
+/* Login user. */
+router.post("/", userController.login);
+
+/* Send user mail. */
+router.post("/send", auth, userController.sendMail);
+
+/* Verify user mail. */
+router.put("/verify/:verificationLink", userController.verifyMail);
+
+/* Change Password. */
+router.put("/password", userController.changePassword);
+
+/* Logout user. */
+router.post("/logout", auth, userController.logout);
 
 module.exports = router;
