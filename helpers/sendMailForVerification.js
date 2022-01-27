@@ -5,7 +5,7 @@ const Verification = require("../models/verification.model");
 const hashString = require("./hashString");
 
 // async..await is not allowed in global scope, must use a wrapper
-async function sendMail(mail) {
+async function sendMailForVerification(mail) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
@@ -22,7 +22,7 @@ async function sendMail(mail) {
   });
 
   var hash = hashString(mail);
-  var verificationLink = process.env.SERVER_URL + hash;
+  var verificationLink = process.env.VERIFY_URL + hash;
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
@@ -45,7 +45,7 @@ async function sendMail(mail) {
     verificationLink: hash,
   });
 
-  verification = await verification.save();
+  verification = await Verification.create(verification);
 }
 
-module.exports = sendMail;
+module.exports = sendMailForVerification;

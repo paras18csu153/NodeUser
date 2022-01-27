@@ -1,10 +1,12 @@
+const ForgetPassword = require("../models/forgetPassword.model");
 const Token = require("../models/token.model");
 const User = require("../models/user.model");
 const Verification = require("../models/verification.model");
 
 const checkPassword = require("../helpers/passwordValidator");
 const hashString = require("../helpers/hashString");
-const sendMail = require("../helpers/sendMail");
+const sendMailForPassword = require("../helpers/sendMailForPassword");
+const sendMailForVerification = require("../helpers/sendMailForVerification");
 const tokenGenerator = require("../helpers/tokenGenerator");
 const validateEmail = require("../helpers/emailValidator");
 
@@ -99,7 +101,7 @@ exports.register = async (req, res) => {
   }
 
   // Send Verification Mail
-  sendMail(user.email);
+  sendMailForVerification(user.email);
 
   // Set header and Return User if registered
   res.setHeader("Authorization", token.token);
@@ -155,7 +157,7 @@ exports.login = async (req, res) => {
 
   if (!user.verified) {
     // Send Verification Mail
-    sendMail(existingUser.email);
+    sendMailForVerification(existingUser.email);
   }
 
   // Return User with token if verified
@@ -163,7 +165,7 @@ exports.login = async (req, res) => {
   return res.status(200).send(existingUser);
 };
 
-exports.sendMail = async (req, res) => {
+exports.sendMailForVerification = async (req, res) => {
   var user = req.body;
 
   // Data Validation
@@ -181,7 +183,7 @@ exports.sendMail = async (req, res) => {
   }
 
   if (!existingUser.verified) {
-    sendMail(user.email);
+    sendMailForVerification(user.email);
     return res.status(200).send({
       message: "Verification Mail Sent!!",
     });
@@ -215,6 +217,10 @@ exports.verifyMail = async (req, res) => {
     return res.status(404).send({ message: "Invalid Verifcation Link!!" });
   }
 
+  if (verification.createdAt < Date.now() - 86400) {
+    return res.status(412).send({ message: "Invalid Verifcation Link!!" });
+  }
+
   var user = await User.updateVerification(user.email);
 
   var verification = await Verification.deleteForUser(verificationLink);
@@ -232,12 +238,10 @@ exports.changePassword = async (req, res) => {
   var user = req.body;
 
   // Backend Validation
-  if (!user.email) {
-    return res.status(400).send({ message: "Email cannot be empty!!" });
-  }
-
-  if (!user.username) {
-    return res.status(400).send({ message: "Username cannot be empty!!" });
+  if (!user.username && !user.email) {
+    return res
+      .status(400)
+      .send({ message: "Username or Email shall be provided!!" });
   }
 
   if (!user.oldPassword) {
@@ -290,6 +294,89 @@ exports.changePassword = async (req, res) => {
   user = await User.changePassword(user.email, user.password);
 
   return res.status(200).send(user);
+};
+
+exports.sendMailForPassword = async (req, res) => {
+  var user = req.body;
+
+  // Backend Validation
+  if (!user.username && !user.email) {
+    return res
+      .status(400)
+      .send({ message: "Username or Email shall be provided!!" });
+  }
+
+  // Check User Password
+  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+
+  if (!existingUser) {
+    return res.status(404).send({
+      message: "User doesn't exist!!",
+    });
+  }
+
+  sendMailForPassword(user.email);
+  return res.status(200).send({
+    message: "Password reset mail sent!!",
+  });
+};
+
+exports.resetPassword = async (req, res) => {
+  var user = req.body;
+
+  var verificationLink = req.params["verificationLink"];
+
+  // Data Validation
+  if (!user.email) {
+    return res.status(400).send({ message: "Email shall be provided!!" });
+  }
+
+  if (!user.password) {
+    return res.status(400).send({ message: "Password cannot be empty!!" });
+  }
+
+  if (!user.confirmPassword) {
+    return res
+      .status(400)
+      .send({ message: "Confirm Password cannot be empty!!" });
+  }
+
+  if (!verificationLink) {
+    return res.status(400).send({ message: "Invalid Verifcation Link!!" });
+  }
+
+  // Verify password pattern
+  if (!checkPassword(user.password)) {
+    return res.status(415).send({
+      message:
+        "Password should contain one capital letter, one small letter, one special character and one number!!",
+    });
+  }
+
+  var fp = await ForgetPassword.getForUser(verificationLink);
+
+  if (!fp) {
+    return res.status(404).send({ message: "Invalid Link!!" });
+  }
+
+  if (fp.createdAt < Date.now() - 86400000) {
+    return res.status(412).send({ message: "Invalid Verifcation Link!!" });
+  }
+
+  // Hash Password
+  user.password = PasswordHash.generate(user.password);
+
+  var user = await User.changePassword(user.email, user.password);
+
+  var fp = await ForgetPassword.deleteForUser(verificationLink);
+
+  if (!user || !fp) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
+  return res.status(200).send({ message: "Password Reset Successful!!" });
 };
 
 exports.logout = async (req, res) => {

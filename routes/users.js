@@ -10,14 +10,24 @@ router.post("/register", userController.register);
 /* Login user. */
 router.post("/", userController.login);
 
-/* Send user mail. */
-router.post("/send", auth, userController.sendMail);
+/* Send user mail for verification. */
+router.post(
+  "/sendMailForVerification",
+  auth,
+  userController.sendMailForVerification
+);
 
 /* Verify user mail. */
 router.put("/verify/:verificationLink", userController.verifyMail);
 
 /* Change Password. */
-router.put("/password", userController.changePassword);
+router.put("/password", auth, userController.changePassword);
+
+/* Send user mail for forget password. */
+router.post("/sendMailForPassword", userController.sendMailForPassword);
+
+/*  Reset Password. */
+router.put("/reset/:verificationLink", userController.resetPassword);
 
 /* Logout user. */
 router.post("/logout", auth, userController.logout);
