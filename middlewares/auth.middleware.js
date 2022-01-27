@@ -26,7 +26,8 @@ module.exports = async function (req, res, next) {
   }
 
   // Verify whether the toke is valid and belongs to current user or not
-  var validatedToken = tokenValidator(token);
+  var secret = process.env.SECRET;
+  var validatedToken = tokenValidator(token, secret);
 
   if (!validatedToken) {
     return res.status(403).send({ message: "Unauthorized Access!!" });

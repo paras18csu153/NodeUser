@@ -1,10 +1,8 @@
+const url = process.env.DB_URL;
+
 const mongoose = require("mongoose");
 
 function db() {
-  // Databse URL
-  const url =
-    "mongodb+srv://admin:Admin%40123@users.rzo0j.mongodb.net/Users?retryWrites=true&w=majority";
-
   // Connecting to Database
   mongoose
     .connect(url, {

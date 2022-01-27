@@ -80,7 +80,8 @@ exports.register = async (req, res) => {
   }
 
   // Generate Token
-  var generatedToken = tokenGenerator(user.username);
+  var secret = process.env.SECRET;
+  var generatedToken = tokenGenerator(user.username, secret);
 
   var token = new Token({
     token: generatedToken,
@@ -132,9 +133,9 @@ exports.login = async (req, res) => {
   }
 
   var token = await Token.getByUserId(existingUser._id);
+  var secret = process.env.SECRET;
+  var generatedToken = tokenGenerator(user.username, secret);
   if (!token) {
-    var generatedToken = tokenGenerator(user.username);
-
     token = new Token({
       token: generatedToken,
       user_id: existingUser._id,
@@ -142,7 +143,6 @@ exports.login = async (req, res) => {
 
     token = await Token.create(token);
   } else {
-    var generatedToken = tokenGenerator(user.username);
     token.token = generatedToken;
 
     token = await Token.updateToken(token);
