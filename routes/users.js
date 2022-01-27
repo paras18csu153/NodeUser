@@ -16,6 +16,9 @@ router.post("/send", auth, userController.sendMail);
 /* Verify user mail. */
 router.put("/verify/:verificationLink", userController.verifyMail);
 
+/* Change Password. */
+router.put("/password", userController.changePassword);
+
 /* Logout user. */
 router.post("/logout", auth, userController.logout);
 

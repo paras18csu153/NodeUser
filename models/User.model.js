@@ -40,12 +40,25 @@ module.exports.getByUsernameEmail = async (username, email) => {
   }
 };
 
-// Check if user already exists with same username or email
+// Update User Verification
 module.exports.updateVerification = async (email) => {
   try {
     var existingUser = await User.findOneAndUpdate(
       { email: email },
       { $set: { verified: true } }
+    );
+    return existingUser;
+  } catch (err) {
+    return null;
+  }
+};
+
+// Change Password
+module.exports.changePassword = async (email, password) => {
+  try {
+    var existingUser = await User.findOneAndUpdate(
+      { email: email },
+      { $set: { password: password } }
     );
     return existingUser;
   } catch (err) {

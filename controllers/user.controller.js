@@ -228,6 +228,70 @@ exports.verifyMail = async (req, res) => {
   return res.status(200).send(user);
 };
 
+exports.changePassword = async (req, res) => {
+  var user = req.body;
+
+  // Backend Validation
+  if (!user.email) {
+    return res.status(400).send({ message: "Email cannot be empty!!" });
+  }
+
+  if (!user.username) {
+    return res.status(400).send({ message: "Username cannot be empty!!" });
+  }
+
+  if (!user.oldPassword) {
+    return res.status(400).send({ message: "Old Password cannot be empty!!" });
+  }
+
+  if (!user.password) {
+    return res.status(400).send({ message: "Password cannot be empty!!" });
+  }
+
+  if (!user.confirmPassword) {
+    return res
+      .status(400)
+      .send({ message: "Confirm Password cannot be empty!!" });
+  }
+
+  // Verify password and confirm password
+  if (user.password != user.confirmPassword) {
+    return res
+      .status(415)
+      .send({ message: "Password and Confirm Password doesn't match!!" });
+  }
+
+  // Verify password pattern
+  if (!checkPassword(user.password)) {
+    return res.status(415).send({
+      message:
+        "Password should contain one capital letter, one small letter, one special character and one number!!",
+    });
+  }
+
+  // Check User Password
+  existingUser = await User.getByUsernameEmail(user.username, user.email);
+
+  if (!existingUser) {
+    return res.status(404).send({
+      message: "User doesn't exist!!",
+    });
+  }
+
+  if (!PasswordHash.verify(user.oldPassword, existingUser.password)) {
+    return res.status(401).send({
+      message: "Credentials doesn't match!!",
+    });
+  }
+
+  // Hash Password
+  user.password = PasswordHash.generate(user.password);
+
+  user = await User.changePassword(user.email, user.password);
+
+  return res.status(200).send(user);
+};
+
 exports.logout = async (req, res) => {
   // Token Deletion if verified
   token = await Token.deleteByToken(req.token);
