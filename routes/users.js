@@ -10,8 +10,12 @@ router.post("/register", userController.register);
 /* Login user. */
 router.post("/", userController.login);
 
-/* Send user mail. */
-router.post("/send", auth, userController.sendMail);
+/* Send user mail for verification. */
+router.post(
+  "/sendMailForVerification",
+  auth,
+  userController.sendMailForVerification
+);
 
 /* Verify user mail. */
 router.put("/verify/:verificationLink", userController.verifyMail);

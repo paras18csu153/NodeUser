@@ -4,7 +4,7 @@ const Verification = require("../models/verification.model");
 
 const checkPassword = require("../helpers/passwordValidator");
 const hashString = require("../helpers/hashString");
-const sendMail = require("../helpers/sendMail");
+const sendMailForVerification = require("../helpers/sendMailForVerification");
 const tokenGenerator = require("../helpers/tokenGenerator");
 const validateEmail = require("../helpers/emailValidator");
 
@@ -99,7 +99,7 @@ exports.register = async (req, res) => {
   }
 
   // Send Verification Mail
-  sendMail(user.email);
+  sendMailForVerification(user.email);
 
   // Set header and Return User if registered
   res.setHeader("Authorization", token.token);
@@ -155,7 +155,7 @@ exports.login = async (req, res) => {
 
   if (!user.verified) {
     // Send Verification Mail
-    sendMail(existingUser.email);
+    sendMailForVerification(existingUser.email);
   }
 
   // Return User with token if verified
@@ -163,7 +163,7 @@ exports.login = async (req, res) => {
   return res.status(200).send(existingUser);
 };
 
-exports.sendMail = async (req, res) => {
+exports.sendMailForVerification = async (req, res) => {
   var user = req.body;
 
   // Data Validation
@@ -181,7 +181,7 @@ exports.sendMail = async (req, res) => {
   }
 
   if (!existingUser.verified) {
-    sendMail(user.email);
+    sendMailForVerification(user.email);
     return res.status(200).send({
       message: "Verification Mail Sent!!",
     });

@@ -5,7 +5,7 @@ const Verification = require("../models/verification.model");
 const hashString = require("./hashString");
 
 // async..await is not allowed in global scope, must use a wrapper
-async function sendMail(mail) {
+async function sendMailForVerification(mail) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
@@ -48,4 +48,4 @@ async function sendMail(mail) {
   verification = await verification.save();
 }
 
-module.exports = sendMail;
+module.exports = sendMailForVerification;
