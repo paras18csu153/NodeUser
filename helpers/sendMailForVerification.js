@@ -22,7 +22,7 @@ async function sendMailForVerification(mail) {
   });
 
   var hash = hashString(mail);
-  var verificationLink = process.env.VERIFY_URL + hash;
+  var verificationLink = process.env.SERVER_URL + "verify/" + hash;
 
   // send mail with defined transport object
   let info = await transporter.sendMail({

@@ -217,7 +217,7 @@ exports.verifyMail = async (req, res) => {
     return res.status(404).send({ message: "Invalid Verifcation Link!!" });
   }
 
-  if (verification.createdAt < Date.now() - 86400) {
+  if (verification.createdAt < Date.now() - 86400000) {
     return res.status(412).send({ message: "Invalid Verifcation Link!!" });
   }
 

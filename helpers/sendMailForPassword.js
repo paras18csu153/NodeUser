@@ -24,7 +24,7 @@ async function sendMailForPassword(mail) {
 
   var uuid = uuidv4();
   var hash = hashString(uuid);
-  var verificationLink = process.env.FORGET_PASSWORD_URL + hash;
+  var verificationLink = process.env.SERVER_URL + "reset/" + hash;
 
   // send mail with defined transport object
   let info = await transporter.sendMail({

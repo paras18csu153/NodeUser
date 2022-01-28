@@ -45,7 +45,8 @@ module.exports.updateVerification = async (email) => {
   try {
     var existingUser = await User.findOneAndUpdate(
       { email: email },
-      { $set: { verified: true } }
+      { $set: { verified: true } },
+      { new: true }
     );
     return existingUser;
   } catch (err) {

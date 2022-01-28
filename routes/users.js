@@ -11,11 +11,7 @@ router.post("/register", userController.register);
 router.post("/", userController.login);
 
 /* Send user mail for verification. */
-router.post(
-  "/sendMailForVerification",
-  auth,
-  userController.sendMailForVerification
-);
+router.post("/send", auth, userController.sendMailForVerification);
 
 /* Verify user mail. */
 router.put("/verify/:verificationLink", userController.verifyMail);
