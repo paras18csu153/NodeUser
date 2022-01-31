@@ -108,7 +108,13 @@ exports.register = async (req, res) => {
   }
 
   // Send Verification Mail
-  sendMailForVerification(user.email);
+  try {
+    sendMailForVerification(user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   // Set header and Return User if registered
   res.setHeader("Authorization", token.token);
@@ -189,7 +195,13 @@ exports.login = async (req, res) => {
 
   if (!user.verified) {
     // Send Verification Mail
-    sendMailForVerification(existingUser.email);
+    try {
+      sendMailForVerification(existingUser.email);
+    } catch (err) {
+      return res.status(500).send({
+        message: "Internal Server Error!!",
+      });
+    }
   }
 
   // Return User with token if verified
@@ -221,7 +233,14 @@ exports.sendMailForVerification = async (req, res) => {
   }
 
   if (!existingUser.verified) {
-    sendMailForVerification(user.email);
+    try {
+      sendMailForVerification(user.email);
+    } catch (err) {
+      return res.status(500).send({
+        message: "Internal Server Error!!",
+      });
+    }
+
     return res.status(200).send({
       message: "Verification Mail Sent!!",
     });
@@ -377,7 +396,14 @@ exports.sendMailForPassword = async (req, res) => {
     });
   }
 
-  sendMailForPassword(user.email);
+  try {
+    sendMailForPassword(user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
   return res.status(200).send({
     message: "Password reset mail sent!!",
   });
