@@ -65,7 +65,13 @@ exports.register = async (req, res) => {
   }
 
   // Check if user already exists with same username or email
-  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  try {
+    var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (existingUser) {
     return res.status(409).send({
@@ -75,9 +81,10 @@ exports.register = async (req, res) => {
 
   // Create user
   user = new User(user);
-  user = await User.create(user);
 
-  if (!user) {
+  try {
+    user = await User.create(user);
+  } catch (err) {
     return res.status(500).send({
       message: "Internal Server Error!!",
     });
@@ -92,9 +99,9 @@ exports.register = async (req, res) => {
     user_id: user._id,
   });
 
-  token = await Token.create(token);
-
-  if (!token) {
+  try {
+    token = await Token.create(token);
+  } catch (err) {
     return res.status(500).send({
       message: "Internal Server Error!!",
     });
@@ -124,7 +131,13 @@ exports.login = async (req, res) => {
   }
 
   // Check if user doesn't exist with same username or email
-  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  try {
+    var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (!existingUser) {
     return res.status(404).send({
@@ -139,7 +152,14 @@ exports.login = async (req, res) => {
     });
   }
 
-  var token = await Token.getByUserId(existingUser._id);
+  try {
+    var token = await Token.getByUserId(existingUser._id);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
+
   var secret = process.env.SECRET;
   var generatedToken = tokenGenerator(user.username, secret);
   if (!token) {
@@ -148,11 +168,23 @@ exports.login = async (req, res) => {
       user_id: existingUser._id,
     });
 
-    token = await Token.create(token);
+    try {
+      token = await Token.create(token);
+    } catch (err) {
+      return res.status(500).send({
+        message: "Internal Server Error!!",
+      });
+    }
   } else {
     token.token = generatedToken;
 
-    token = await Token.updateToken(token);
+    try {
+      token = await Token.updateToken(token);
+    } catch (err) {
+      return res.status(500).send({
+        message: "Internal Server Error!!",
+      });
+    }
   }
 
   if (!user.verified) {
@@ -174,7 +206,13 @@ exports.sendMailForVerification = async (req, res) => {
   }
 
   // Check if user doesn't exist with same username or email
-  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  try {
+    var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (!existingUser) {
     return res.status(404).send({
@@ -221,11 +259,17 @@ exports.verifyMail = async (req, res) => {
     return res.status(412).send({ message: "Invalid Verifcation Link!!" });
   }
 
-  var user = await User.updateVerification(user.email);
+  try {
+    var user = await User.updateVerification(user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
-  var verification = await Verification.deleteForUser(verificationLink);
-
-  if (!user || !verification) {
+  try {
+    var verification = await Verification.deleteForUser(verificationLink);
+  } catch (err) {
     return res.status(500).send({
       message: "Internal Server Error!!",
     });
@@ -274,7 +318,13 @@ exports.changePassword = async (req, res) => {
   }
 
   // Check User Password
-  existingUser = await User.getByUsernameEmail(user.username, user.email);
+  try {
+    var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (!existingUser) {
     return res.status(404).send({
@@ -291,7 +341,13 @@ exports.changePassword = async (req, res) => {
   // Hash Password
   user.password = PasswordHash.generate(user.password);
 
-  user = await User.changePassword(user.email, user.password);
+  try {
+    user = await User.changePassword(user.email, user.password);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   return res.status(200).send(user);
 };
@@ -307,7 +363,13 @@ exports.sendMailForPassword = async (req, res) => {
   }
 
   // Check User Password
-  var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  try {
+    var existingUser = await User.getByUsernameEmail(user.username, user.email);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (!existingUser) {
     return res.status(404).send({
@@ -370,11 +432,17 @@ exports.resetPassword = async (req, res) => {
   // Hash Password
   user.password = PasswordHash.generate(user.password);
 
-  var user = await User.changePassword(user.email, user.password);
+  try {
+    user = await User.changePassword(user.email, user.password);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
-  var fp = await ForgetPassword.deleteForUser(verificationLink);
-
-  if (!user || !fp) {
+  try {
+    var fp = await ForgetPassword.deleteForUser(verificationLink);
+  } catch (err) {
     return res.status(500).send({
       message: "Internal Server Error!!",
     });
@@ -385,10 +453,12 @@ exports.resetPassword = async (req, res) => {
 
 exports.logout = async (req, res) => {
   // Token Deletion if verified
-  token = await Token.deleteByToken(req.token);
-
-  if (!token) {
-    return res.status(500).send({ message: "Internal Server Error!!" });
+  try {
+    token = await Token.deleteByToken(req.token);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
   }
 
   // Return Logged out successfully

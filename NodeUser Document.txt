@@ -1,0 +1,13 @@
+Login
+Register
+Forget Password
+Change Password Logout
+
+Token based authentication using JWT
+Password Hashing using Bcrypt
+Send Mails
+Hashing Strings using md-5
+Used UUID in hashing in forgot password
+
+Middlewares
+Node Scheduling For Data Clean-up

@@ -15,47 +15,31 @@ var Verification = (module.exports = mongoose.model(
 
 // Create user
 module.exports.create = async (verification) => {
-  try {
-    verification = await verification.save();
-    return verification;
-  } catch (err) {
-    return null;
-  }
+  verification = await verification.save();
+  return verification;
 };
 
 // Get Verification Links for user
 module.exports.getForUser = async (verificationLink) => {
-  try {
-    var verification = await Verification.findOne({
-      verificationLink: verificationLink,
-    });
-    return verification;
-  } catch (err) {
-    return null;
-  }
+  var verification = await Verification.findOne({
+    verificationLink: verificationLink,
+  });
+  return verification;
 };
 
 // Delete Verification Links for user
 module.exports.deleteForUser = async (verificationLink) => {
-  try {
-    var verification = await Verification.deleteMany({
-      verificationLink: verificationLink,
-    });
-    return verification;
-  } catch (err) {
-    return null;
-  }
+  var verification = await Verification.deleteMany({
+    verificationLink: verificationLink,
+  });
+  return verification;
 };
 
 // Delete Invalid Verification Links
 module.exports.deleteAllByTime = async (timestamp) => {
-  try {
-    timestamp = timestamp - 86400000;
-    var verification = await Verification.deleteMany({
-      createdAt: { $lt: timestamp },
-    });
-    return verification;
-  } catch (err) {
-    return null;
-  }
+  timestamp = timestamp - 86400000;
+  var verification = await Verification.deleteMany({
+    createdAt: { $lt: timestamp },
+  });
+  return verification;
 };

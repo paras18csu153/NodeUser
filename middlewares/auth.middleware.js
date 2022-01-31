@@ -19,7 +19,13 @@ module.exports = async function (req, res, next) {
   }
 
   // Check if token exists or not
-  var existingToken = await Token.getByToken(token);
+  try {
+    var existingToken = await Token.getByToken(token);
+  } catch (err) {
+    return res.status(500).send({
+      message: "Internal Server Error!!",
+    });
+  }
 
   if (!existingToken) {
     return res.status(403).send({ message: "Unauthorized Access!!" });
